@@ -211,26 +211,23 @@ get_stem() {
 # ---------------------------------------------------------------------------
 usage() {
   local exit_code="${1:-0}"
-  cat <<EOF
-${BOLD}kepub-upload${NC} ${DIM}v${VERSION}${NC}
+  echo -e "${BOLD}kepub-upload${NC} ${DIM}v${VERSION}${NC}
 
 Convert ebooks to Kobo kepub format and upload to cloud storage.
 
 ${BOLD}USAGE${NC}
   kepub-upload [options] <file>
 
-${BOLD}FORMATS${NC}
-EOF
+${BOLD}FORMATS${NC}"
 
   for name in "${FORMAT_LIST[@]}"; do
     printf "  %-14s %s\n" "$name" "${FORMAT_DESC[$name]}"
   done
 
-  cat <<EOF
-
+  echo -e "
 ${BOLD}OPTIONS${NC}
   -r, --remote NAME    rclone remote name  [default: ${KEPUB_UPLOAD_REMOTE:-gdrive}]
-  -p, --path PATH      remote directory    [default: ${KEPUB_UPLOAD_PATH:-Books/Kobo}]
+  -p, --path PATH      remote directory    [default: ${KEPUB_UPLOAD_PATH:-Rakuten Kobo}]
   -k, --keep           keep converted files locally
   -n, --dry-run        convert but don't upload
       --no-color       disable colored output
@@ -242,7 +239,7 @@ ${BOLD}CONFIGURATION${NC}
   Config file: \${XDG_CONFIG_HOME:-~/.config}/kepub-upload/config
 
   ${DIM}KEPUB_UPLOAD_REMOTE=gdrive${NC}
-  ${DIM}KEPUB_UPLOAD_PATH=Books/Kobo${NC}
+  ${DIM}KEPUB_UPLOAD_PATH=Rakuten Kobo${NC}
 
   Environment variables and CLI flags override the config file.
 
@@ -250,8 +247,7 @@ ${BOLD}EXAMPLES${NC}
   kepub-upload novel.epub
   kepub-upload textbook.pdf
   kepub-upload -r dropbox -p Books novel.epub
-  kepub-upload --dry-run --keep novel.pdf
-EOF
+  kepub-upload --dry-run --keep novel.pdf"
   exit "$exit_code"
 }
 
@@ -288,7 +284,7 @@ main() {
 
   # Apply defaults after config so config values take precedence
   KEPUB_UPLOAD_REMOTE="${KEPUB_UPLOAD_REMOTE:-gdrive}"
-  KEPUB_UPLOAD_PATH="${KEPUB_UPLOAD_PATH:-Books/Kobo}"
+  KEPUB_UPLOAD_PATH="${KEPUB_UPLOAD_PATH:-Rakuten Kobo}"
 
   load_converters
 
@@ -397,7 +393,15 @@ main() {
   fi
 
   log_info "Uploading to ${BOLD}$dest/${NC}..."
-  rclone copy "$KEPUB_FILE" "$dest/" --progress
+  if ! rclone copy "$KEPUB_FILE" "$dest/" --progress 2>&1; then
+    log_error "Upload failed"
+    if ! rclone listremotes 2>/dev/null | grep -q "^${KEPUB_UPLOAD_REMOTE}:$"; then
+      log_error "rclone remote ${BOLD}${KEPUB_UPLOAD_REMOTE}${NC} is not configured"
+      log_info "Run ${BOLD}rclone config${NC} to set up a remote named ${BOLD}${KEPUB_UPLOAD_REMOTE}${NC}"
+      log_info "Or specify a different remote: ${BOLD}kepub-upload -r <remote> <file>${NC}"
+    fi
+    exit 1
+  fi
 
   # --- Summary ---
   echo
