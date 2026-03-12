@@ -9,19 +9,13 @@ Supports epub, pdf, and kepub out of the box. New formats can be added by droppi
 **curl** (any Linux/macOS):
 
 ```sh
-curl -sL https://raw.githubusercontent.com/<user>/kepub-upload/main/install.sh | bash
-```
-
-**Arch Linux (AUR)**:
-
-```sh
-yay -S kepub-upload
+curl -sL https://raw.githubusercontent.com/davidlekve/kepub-upload/main/install.sh | bash
 ```
 
 **git clone**:
 
 ```sh
-git clone https://github.com/<user>/kepub-upload
+git clone https://github.com/davidlekve/kepub-upload
 cd kepub-upload
 make install PREFIX=~/.local
 ```
