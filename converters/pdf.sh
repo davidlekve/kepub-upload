@@ -26,7 +26,6 @@ convert_pdf() {
   log_success "Converted to epub"
 
   log_info "Converting epub to kepub..."
-  kepubify -o "$dir" "$epub_file"
-
   KEPUB_FILE="$dir/${stem}.kepub.epub"
+  kepubify -o "$KEPUB_FILE" "$epub_file"
 }

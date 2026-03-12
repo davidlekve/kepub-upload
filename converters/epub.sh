@@ -13,7 +13,6 @@ convert_epub() {
   local input="$1" dir="$2" stem="$3"
 
   log_info "Converting epub to kepub..."
-  kepubify -o "$dir" "$input"
-
   KEPUB_FILE="$dir/${stem}.kepub.epub"
+  kepubify -o "$KEPUB_FILE" "$input"
 }
